@@ -5,7 +5,7 @@ Aplikasi ini dirancang untuk mengelola data pengguna agar cepat dan aman
 Fitur Utama:
 
 Fitur utama proyek ini meliputi:
-#Creat
-#Read
-#Update
-#Delete
+*Creat
+*Read
+*Update
+*Delete
