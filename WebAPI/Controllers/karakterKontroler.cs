@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebAPI.Services.CharacterService;
 
 namespace WebAPI.Controllers
 {
@@ -6,35 +7,35 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class KarakterController : ControllerBase
     {
-        private static List<Karakter> Karakter = new List<Karakter> {
-            new Karakter(),
+        private readonly ICharacterService _characterService;
 
-            new Karakter
-            {
-                Id = 1,
-                name = "num",
-                email = "num@gmail.com",
-                password = "12345678"
-            },
-            new Karakter
-            {
-                Id = 2,
-                name = "tes",
-                email = "tes@gmail.com",
-                password = "12345678"
-            }
-        };
+        public KarakterController(ICharacterService characterService)
+        {
+            _characterService = characterService;
+        }
 
         [HttpGet("GetAll")]
-        public ActionResult<List<Karakter>> Get()
+        public async Task<ActionResult<Respon<List<AmbilKarakterDto>>>> Get()
         {
-            return Ok(Karakter);
+            return Ok(await _characterService.GetAllKarakters());
         }
 
         [HttpGet("{id}")]
-        public ActionResult<List<Karakter>> GetSingle(int id)
+        public async Task<ActionResult<Respon<List<AmbilKarakterDto>>>> GetSingle(int id)
         {
-            return Ok(Karakter.FirstOrDefault(c => c.Id == id));
+            return Ok(await _characterService.GetKarakterById(id));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Respon<AmbilKarakterDto>>> TambahKarakter(TambahKarakterDto addkarakter)
+        {
+            return Ok(await _characterService.TambahKarakter(karakter));
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<Respon<AmbilKarakterDto>>> UpdateKarakter(UpdateKarakterDto upkarakter)
+        {
+            return Ok(await _characterService.UpdateKarakter(upkarakter));
         }
     }
 }
