@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using WebAPI.Model;
 
 namespace WebAPI.Services.CharacterService
 {
@@ -24,20 +23,27 @@ namespace WebAPI.Services.CharacterService
             }
         };
         private readonly IMapper _mapper;
+        private readonly DataContext _context;
 
-        public CharacterService(IMapper mapper)
+        public CharacterService(IMapper mapper, DataContext context)
         {
             _mapper = mapper;
+            _context = context;
         }
 
 
         public async Task<Respon<List<AmbilKarakterDto>>> TambahKarakter(TambahKarakterDto addkarakter)
         {
             var respon = new Respon<List<AmbilKarakterDto>>();
-            var karakter1 = _mapper.Map<Karakter>(addkarakter);
-            karakter1.Id = Karakter.Max(c => c.Id) + 1;
-            Karakter.Add(karakter1);
-            respon.Data = Karakter.Select(c => _mapper.Map<AmbilKarakterDto>(c)).ToList();
+            var dbkarakter = _mapper.Map<Karakter>(addkarakter);
+
+            await _context.karakters.AddAsync(dbkarakter);
+            await _context.SaveChangesAsync();
+
+            respon.Data = await _context.karakters
+                .Select(c => _mapper.Map<AmbilKarakterDto>(c))
+                .ToListAsync();
+
             return respon;
         }
 
@@ -45,31 +51,32 @@ namespace WebAPI.Services.CharacterService
         public async Task<Respon<List<AmbilKarakterDto>>> GetAllKarakters()
         {
             var Respon = new Respon<List<AmbilKarakterDto>>();
-            Respon.Data = Karakter.Select(c => _mapper.Map<AmbilKarakterDto>(c)).ToList();
+            var dbKarakter = await _context.karakters.ToArrayAsync();
+            Respon.Data = dbKarakter.Select(c => _mapper.Map<AmbilKarakterDto>(c)).ToList();
             return Respon;
         }
 
         public async Task<Respon<AmbilKarakterDto>> GetKarakterById(int id)
         {
             var Respon = new Respon<AmbilKarakterDto>();
-            var karakter = Karakter.FirstOrDefault(c => c.Id == id);
-            Respon.Data = _mapper.Map<AmbilKarakterDto>(karakter);
+            var dbKarakter = await _context.karakters.FirstOrDefaultAsync(c => c.Id == id);
+            Respon.Data = _mapper.Map<AmbilKarakterDto>(dbKarakter);
             return Respon;
         }
 
         public async Task<Respon<AmbilKarakterDto>> UpdateKarakter(UpdateKarakterDto upkarakter)
         {
             var respon = new Respon<AmbilKarakterDto>();
-            var karakter = Karakter.FirstOrDefault(c => c.Id == upkarakter.Id);
+            var dbkarakter = await _context.karakters.FirstOrDefaultAsync(c => c.Id == upkarakter.Id);
 
-            if (karakter != null)
+            if (dbkarakter != null)
             {
-                _mapper.Map(upkarakter, karakter);
-                karakter.name = upkarakter.name;
-                karakter.email = upkarakter.email;
-                karakter.password = upkarakter.password;
+                _mapper.Map(upkarakter, dbkarakter);
+                dbkarakter.name = upkarakter.name;
+                dbkarakter.email = upkarakter.email;
+                dbkarakter.password = upkarakter.password;
 
-                respon.Data = _mapper.Map<AmbilKarakterDto>(karakter);
+                respon.Data = _mapper.Map<AmbilKarakterDto>(dbkarakter);
             }
             else
             {
@@ -83,12 +90,12 @@ namespace WebAPI.Services.CharacterService
         public async Task<Respon<List<AmbilKarakterDto>>> HapusKarakter(int id)
         {
             var respon = new Respon<List<AmbilKarakterDto>>();
-            var karakter = Karakter.FirstOrDefault(c => c.Id == id);
+            var dbkarakter = await _context.karakters.FirstOrDefaultAsync(c => c.Id == id);
 
-            if (karakter != null)
+            if (dbkarakter != null)
             {
-               Karakter.Remove(karakter);
-               
+                Karakter.Remove(dbkarakter);
+
 
                 respon.Data = Karakter.Select(c => _mapper.Map<AmbilKarakterDto>(c)).ToList();
             }
